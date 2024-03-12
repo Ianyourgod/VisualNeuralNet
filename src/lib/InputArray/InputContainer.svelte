@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from 'svelte';
     import Input from './Input.svelte';
 
     // get amount of inputs wanted (default 3x3)
@@ -18,26 +17,16 @@
     function inputOnclick(id, state) {
         inputs[id] = state;
     }
-
-    onMount(() => {
-        for (let i = 0; i < inputsHeight; i++) {
-            let row = document.createElement('div');
-            row.classList.add('row');
-            container.appendChild(row);
-
-            for (let j = 0; j < inputsWidth; j++) {
-                new Input({
-                    target: row,
-                    props: {
-                        onclick: (state) => inputOnclick(i*inputsWidth+j, state)
-                    }
-                });
-            }
-        }
-    })
 </script>
 
 <div class="inputs-container" bind:this={container}>
+    {#each Array(inputsHeight) as input, i}
+        <div class="row">
+            {#each Array(inputsWidth) as _, j}
+                <Input onclick={(state) => inputOnclick(i*inputsWidth+j, state)} />
+            {/each}
+        </div>
+    {/each}
 </div>
 
 <style>

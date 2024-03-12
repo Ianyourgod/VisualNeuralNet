@@ -16,7 +16,7 @@
 
 <style>
     .input {
-        border: 1px solid black;
+        border: 1px solid #345;
         background-color: #f0f0f0;
         width: 75px;
         height: 75px;
