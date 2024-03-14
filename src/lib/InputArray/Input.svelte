@@ -1,13 +1,13 @@
 <script>
     let button;
-    let state = false;
+    let value = false;
 
     export let onclick;
 
     function toggle() {
-        state = !state;
-        button.style.backgroundColor = state ? "#000" : "#f3f2f0";
-        onclick(state);
+        value = !value;
+        button.style.backgroundColor = value ? "#000" : "#f3f2f0";
+        onclick(value);
     }
 </script>
 
