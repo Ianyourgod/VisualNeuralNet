@@ -1,14 +1,16 @@
 <script>
-    import { browser } from '$app/environment'; 
     import { onMount } from "svelte";
     import InputContainer from "../lib/InputArray/InputContainer.svelte";
-    import NetworkColumn from "../lib/NetworkRow/NetworkColumn.svelte";
-    import LeaderLine from 'leader-line';
+    import NetworkColumn from "../lib/NetworkColumn/NetworkColumn.svelte";
 
     let inputs;
 
     let nodes;
 
+    function sig(x) {
+        return 1/(1+Math.exp(-x*100))
+    }
+    
     onMount(() => {   
         nodes.push(.5);
     });
@@ -18,7 +20,7 @@
     <InputContainer inputsWidth={3} inputsHeight={3} bind:inputs={inputs}/>
 </div>
 
-<NetworkColumn bind:nodes={nodes} />
+<NetworkColumn bind:nodes={nodes} inputFunction={sig} />
 
 <style>
     .input-container {
