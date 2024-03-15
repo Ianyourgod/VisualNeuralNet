@@ -3,27 +3,36 @@
 
     export let nodes = [];
 
+    export let nodeElements = [];
+    let val = 0;
+
     let container;
 
-    function addNode() {
-        nodes.push(.5);
+    export function addNode() {
+        nodes.push(val);
+        val += .1;
+        nodes = nodes;
     }
 
-    function removeNode() {
+    export function removeNode() {
         nodes.pop();
+        nodes = nodes;
     }
 
-    function updateNode(i, value) {
+    export function updateNode(i, value) {
         nodes[i] = value;
+        nodes = nodes;
     }
 </script>
 
 <div class="network-row" bind:this={container}>
     {#each nodes as node, i}
         <div class="node">
-            <Node bind:value={nodes[i]} />
+            <Node bind:value={nodes[i]} bind:element={nodeElements[i]} />
         </div>
     {/each}
+
+    <button on:click={addNode}>Add Node</button>
 </div>
 
 <style>

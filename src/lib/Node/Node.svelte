@@ -1,9 +1,12 @@
 <script>
+    import { onMount } from "svelte";
+    
     export let value = .5;
+
+    export let element;
 </script>
 
-<div class="node" style="background-color: #{(Math.floor((-value*15)+15)).toString(16).repeat(3)}">
-</div>
+<div bind:this={element} id="element" class="node" style="background-color: #{(Math.floor((-value*15)+15)).toString(16).repeat(3)}"></div>
 
 <style>
     .node {
