@@ -10,64 +10,11 @@
     let toggleFuncs;
     let weights = [];
 
-    let trainingData = [
-        {
-            /* 1 0 0
-               0 1 0
-               0 0 1 */
-            inputs: [1, 0, 0, 0, 1, 0, 0, 0, 1],
-            outputs: [1, 0, 0]
-        },
-        {
-            /* 0 0 1
-               0 1 0
-               1 0 0 */
-            inputs: [0, 0, 1, 0, 1, 0, 1, 0, 0],
-            outputs: [1, 0, 0]
-        },
-        {
-            /* 1 0 0
-               1 0 0
-               1 0 0 */
-            inputs: [1, 0, 0, 1, 0, 0, 1, 0, 0],
-            outputs: [0, 1, 0]
-        },
-        {
-            /* 0 1 0
-               0 1 0
-               0 1 0 */
-            inputs: [0, 1, 0, 0, 1, 0, 0, 1, 0],
-            outputs: [0, 1, 0]
-        },
-        {
-            /* 0 0 1
-               0 0 1
-               0 0 1 */
-            inputs: [0, 0, 1, 0, 0, 1, 0, 0, 1],
-            outputs: [0, 1, 0]
-        },
-        {
-            /* 1 1 1
-               0 0 0
-               0 0 0 */
-            inputs: [1, 1, 1, 0, 0, 0, 0, 0, 0],
-            outputs: [0, 0, 1]
-        },
-        {
-            /* 0 0 0
-               1 1 1
-               0 0 0 */
-            inputs: [0, 0, 0, 1, 1, 1, 0, 0, 0],
-            outputs: [0, 0, 1]
-        },
-        {
-            /* 0 0 0
-               0 0 0
-               1 1 1 */
-            inputs: [0, 0, 0, 0, 0, 0, 1, 1, 1],
-            outputs: [0, 0, 1]
-        }
-    ];
+    const trainingURL = "/lines.json"
+
+    let trainingCount = 2000;
+
+    let trainingData = [];
 
     function sig(x) {
         return 1/(1+Math.exp(-x))
@@ -80,11 +27,10 @@
     }
     
     onMount(() => {
-        addNodes(0, 9);
-        addNodes(1, 9);
-        addNodes(2, 3);
-
-        toggleFuncs[0]();
+        fetch(trainingURL).then((res) => res.json())
+        .then((data) => {
+            trainingData = data;
+        });
 
         setTimeout(() => {
             onUpdate();
@@ -105,13 +51,12 @@
     function test() {
         let final = 0;
         trainingData.forEach((data) => {
-            let _inputs = data.inputs;
+            inputs = data.inputs;
             let outputs = data.outputs;
-            inputs = _inputs;
             let out = runThrough();
 
             for (let i = 0; i < out.length; i++) {
-                final += Math.abs(out[i] - outputs[i]);
+                final += Math.pow(out[i] - outputs[i], 2);
             }
         });
         return final;
@@ -126,11 +71,11 @@
                 let nodeChange = [];
                 node.forEach((weight, k) => {
                     let total = [0, 0];
-                    weights[i][j][k] = weight + .1;
+                    weights[i][j][k] += .1;
                     total[0] = test();
                     weights[i][j][k] = weight - .1;
                     total[1] = test();
-                    weights[i][j][k] = weight;
+                    weights[i][j][k] = weight; // reset
 
                     nodeChange.push(total);
                 });
@@ -160,19 +105,21 @@
     function train(amount) {
         for (let i = 0; i < amount; i++) {
             trainOnce();
-            onUpdate();
         }
     }
 
-    function trainWithoutLag(amount) {
+    function trainWithoutLag(amount, startedAt) {
+        if (!startedAt) {
+            startedAt = Date.now();
+        }
         if (amount > 0) {
             train(10);
             console.log(amount);
-            requestAnimationFrame(() => {
-                trainWithoutLag(amount - 10);
-            });
+            setTimeout(() => {
+                trainWithoutLag(amount - 10, startedAt);
+            }, 0); // request animation frame pauses when the tab isn't active
         } else {
-            alert("done");
+            alert(`done, took ${(Date.now() - startedAt)/1000} seconds`);
         }
     }
 
@@ -181,9 +128,15 @@
     }
 </script>
 
-<button on:click={() => {trainWithoutLag(5000)}}>Train</button>
-<button on:click={() => {console.log(test())}}>Test</button>
-
+<button on:click={() => {trainWithoutLag(trainingCount)}}>Train</button>
+<button on:click={() => {trainOnce()}}>Train Once</button>
+<button on:click={() => {
+    let res = test();
+    console.log(res);
+    alert(res);
+}}>Test</button>
+10<input type="range" min=10 max=5000 step=10 bind:value={trainingCount} />5000
+({trainingCount})
 <div class="input-container">
     <InputContainer
      inputsWidth={3}
@@ -200,26 +153,19 @@
      bind:nodes={nodes[0]}
      inputFunction={sig}
      bind:addNode={addNode[0]}
-     inputSize={9}
      bind:nodeWeights={weights[0]}
+     inputSize={9}
+     startingNeurons={3}
     />
 
     <NetworkColumn
-     bind:output={columnUpdates[1]}
+     bind:output={columnUpdates[1]} 
      bind:nodes={nodes[1]}
      inputFunction={sig}
      bind:addNode={addNode[1]}
-     inputSize={9}
      bind:nodeWeights={weights[1]}
-    />
-
-    <NetworkColumn
-     bind:output={columnUpdates[2]}
-     bind:nodes={nodes[2]}
-     inputFunction={sig}
-     bind:addNode={addNode[2]}
-     inputSize={9}
-     bind:nodeWeights={weights[2]}
+     inputSize={3}
+     startingNeurons={3}
     />
 </div>
 
@@ -245,6 +191,7 @@
 
     :global(body) {
         background-color: rgb(34, 34, 49);
+        color: white;   
     }
 
     .rules {
