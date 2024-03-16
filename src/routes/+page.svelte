@@ -25,7 +25,7 @@
     }
     
     onMount(() => {
-        fetch("/xor.json").then((res) => res.json())
+        fetch("/isEven.json").then((res) => res.json())
         .then((data) => {
             trainingData = data;
         });
@@ -156,7 +156,7 @@
     />
 
     <NetworkColumn
-     bind:output={columnUpdates[1]}
+     bind:output={columnUpdates[1]} 
      bind:nodes={nodes[1]}
      inputFunction={sig}
      bind:addNode={addNode[1]}
