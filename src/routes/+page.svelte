@@ -132,9 +132,8 @@
 </script>
 
 <button on:click={() => {trainWithoutLag(trainingCount)}}>Train</button>
-<button on:click={() => {console.log(test())}}>Test</button>
+<button on:click={() => {let res = test();console.log(res);alert(res)}}>Test</button>
 10<input type="range" min=10 max=5000 step=10 bind:value={trainingCount} />5000
-
 <div class="input-container">
     <InputContainer
      inputsWidth={3}
