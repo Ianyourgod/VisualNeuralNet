@@ -10,6 +10,8 @@
     let toggleFuncs;
     let weights = [];
 
+    let trainingCount = 2000;
+
     let trainingData = [
         {
             /* 1 0 0
@@ -181,8 +183,9 @@
     }
 </script>
 
-<button on:click={() => {trainWithoutLag(5000)}}>Train</button>
+<button on:click={() => {trainWithoutLag(trainingCount)}}>Train</button>
 <button on:click={() => {console.log(test())}}>Test</button>
+<input type="range" min=10 max=5000 step=10 bind:value={trainingCount} />
 
 <div class="input-container">
     <InputContainer
