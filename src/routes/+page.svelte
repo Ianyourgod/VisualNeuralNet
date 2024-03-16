@@ -10,6 +10,8 @@
     let toggleFuncs;
     let weights = [];
 
+    const trainingURL = "/lines.json"
+
     let trainingCount = 2000;
 
     let trainingData = [];
@@ -25,13 +27,10 @@
     }
     
     onMount(() => {
-        fetch("/isEven.json").then((res) => res.json())
+        fetch(trainingURL).then((res) => res.json())
         .then((data) => {
             trainingData = data;
         });
-        
-        addNodes(0, 8);
-        addNodes(1, 1);
 
         setTimeout(() => {
             onUpdate();
@@ -52,13 +51,12 @@
     function test() {
         let final = 0;
         trainingData.forEach((data) => {
-            let _inputs = data.inputs;
+            inputs = data.inputs;
             let outputs = data.outputs;
-            inputs = _inputs;
             let out = runThrough();
 
             for (let i = 0; i < out.length; i++) {
-                final += Math.abs(out[i] - outputs[i]);
+                final += Math.pow(out[i] - outputs[i], 2);
             }
         });
         return final;
@@ -73,11 +71,11 @@
                 let nodeChange = [];
                 node.forEach((weight, k) => {
                     let total = [0, 0];
-                    weights[i][j][k] = weight + .1;
+                    weights[i][j][k] += .1;
                     total[0] = test();
                     weights[i][j][k] = weight - .1;
                     total[1] = test();
-                    weights[i][j][k] = weight;
+                    weights[i][j][k] = weight; // reset
 
                     nodeChange.push(total);
                 });
@@ -107,7 +105,6 @@
     function train(amount) {
         for (let i = 0; i < amount; i++) {
             trainOnce();
-            onUpdate();
         }
     }
 
@@ -118,9 +115,9 @@
         if (amount > 0) {
             train(10);
             console.log(amount);
-            requestAnimationFrame(() => {
+            setTimeout(() => {
                 trainWithoutLag(amount - 10, startedAt);
-            });
+            }, 0); // request animation frame pauses when the tab isn't active
         } else {
             alert(`done, took ${(Date.now() - startedAt)/1000} seconds`);
         }
@@ -132,8 +129,10 @@
 </script>
 
 <button on:click={() => {trainWithoutLag(trainingCount)}}>Train</button>
-<button on:click={() => {let res = test();console.log(res);alert(res)}}>Test</button>
+<button on:click={() => {trainOnce()}}>Train Once</button>
+<button on:click={() => {let res = test();console.log(res);console.log(weights);alert(res);}}>Test</button>
 10<input type="range" min=10 max=5000 step=10 bind:value={trainingCount} />5000
+({trainingCount})
 <div class="input-container">
     <InputContainer
      inputsWidth={3}
@@ -150,8 +149,9 @@
      bind:nodes={nodes[0]}
      inputFunction={sig}
      bind:addNode={addNode[0]}
-     inputSize={9}
      bind:nodeWeights={weights[0]}
+     inputSize={9}
+     startingNeurons={9}
     />
 
     <NetworkColumn
@@ -159,8 +159,19 @@
      bind:nodes={nodes[1]}
      inputFunction={sig}
      bind:addNode={addNode[1]}
-     inputSize={8}
      bind:nodeWeights={weights[1]}
+     inputSize={9}
+     startingNeurons={5}
+    />
+
+    <NetworkColumn
+     bind:output={columnUpdates[2]} 
+     bind:nodes={nodes[2]}
+     inputFunction={sig}
+     bind:addNode={addNode[2]}
+     bind:nodeWeights={weights[2]}
+     inputSize={5}
+     startingNeurons={3}
     />
 </div>
 

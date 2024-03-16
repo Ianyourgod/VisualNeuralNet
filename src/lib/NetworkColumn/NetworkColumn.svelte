@@ -6,20 +6,22 @@
     export let nodeWeights = [];
     export let inputFunction;
     export let inputSize;
+    export let startingNeurons = 1;
 
     let container;
 
-    function genArray(size, val) {
+    function genArray(size, valFunc) {
         const arr = [];
+        let val;
         for (let i=0;i<size;i++) {
-            arr.push(val);
+            arr.push(valFunc(i));
         }
         return arr;
     }
 
     export function addNode() {
         nodes.push(.5);
-        nodeWeights.push(genArray(inputSize, 1));
+        nodeWeights.push(genArray(inputSize+1, (i) => Math.random()*2-1)); // +1 for the bias
     }
 
     export function removeNode() {
@@ -31,11 +33,16 @@
     }
 
     export function output(inputs) {
+        const finInputs = inputs.concat([1]); // add the bias
         const out = [];
         nodeUpdates.forEach((func) => {
-            out.push(func(inputs));
+            out.push(func(finInputs));
         });
         return out;
+    }
+
+    for (let i=0;i<startingNeurons;i++) {
+        addNode();
     }
 </script>
 
