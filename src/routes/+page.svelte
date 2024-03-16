@@ -8,6 +8,7 @@
     let nodes = [];
     let addNode = [];
     let toggleFuncs;
+    let weights = [];
 
     let trainingData = [
         {
@@ -90,15 +91,7 @@
         }, 100);
     });
 
-    function train() {
-        trainingData.forEach((data) => {
-            inputs = data.inputs;
-            onUpdate();
-            console.log(columnUpdates[2]);
-        });
-    }
-
-    function onUpdate() {
+    function runThrough() {
         let prev = [];
         inputs.forEach((input) => {
             prev.push(Number(input)*2-1);
@@ -106,8 +99,90 @@
         columnUpdates.forEach((func) => {
             prev = func(prev);
         });
+        return prev;
+    }
+
+    function test() {
+        let final = 0;
+        trainingData.forEach((data) => {
+            let _inputs = data.inputs;
+            let outputs = data.outputs;
+            inputs = _inputs;
+            let out = runThrough();
+
+            for (let i = 0; i < out.length; i++) {
+                final += Math.abs(out[i] - outputs[i]);
+            }
+        });
+        return final;
+    }
+
+    function trainOnce() {
+        // loop over all the weights, fiddle with em and see what works
+        let changes = [];
+        weights.forEach((column, i) => {
+            let change = [];
+            column.forEach((node, j) => {
+                let nodeChange = [];
+                node.forEach((weight, k) => {
+                    let total = [0, 0];
+                    weights[i][j][k] = weight + .1;
+                    total[0] = test();
+                    weights[i][j][k] = weight - .1;
+                    total[1] = test();
+                    weights[i][j][k] = weight;
+
+                    nodeChange.push(total);
+                });
+                change.push(nodeChange);
+            });
+            changes.push(change);
+        });
+
+        // now find the best change
+        let best = [0, 0, 0, 0, 9999999]; // [column, node, weight, change, total]
+        changes.forEach((column, i) => {
+            column.forEach((node, j) => {
+                node.forEach((changes, k) => {
+                    changes.forEach((change, l) => {
+                        if (change < best[4]) {
+                            best = [i, j, k, l, change];
+                        }
+                    });
+                });
+            });
+        });
+
+        // apply the best change
+        weights[best[0]][best[1]][best[2]] += best[3] ? -.1 : .1;
+    }
+
+    function train(amount) {
+        for (let i = 0; i < amount; i++) {
+            trainOnce();
+            onUpdate();
+        }
+    }
+
+    function trainWithoutLag(amount) {
+        if (amount > 0) {
+            train(10);
+            console.log(amount);
+            requestAnimationFrame(() => {
+                trainWithoutLag(amount - 10);
+            });
+        } else {
+            alert("done");
+        }
+    }
+
+    function onUpdate() {
+        runThrough();
     }
 </script>
+
+<button on:click={() => {trainWithoutLag(5000)}}>Train</button>
+<button on:click={() => {console.log(test())}}>Test</button>
 
 <div class="input-container">
     <InputContainer
@@ -126,6 +201,7 @@
      inputFunction={sig}
      bind:addNode={addNode[0]}
      inputSize={9}
+     bind:nodeWeights={weights[0]}
     />
 
     <NetworkColumn
@@ -134,6 +210,7 @@
      inputFunction={sig}
      bind:addNode={addNode[1]}
      inputSize={9}
+     bind:nodeWeights={weights[1]}
     />
 
     <NetworkColumn
@@ -142,6 +219,7 @@
      inputFunction={sig}
      bind:addNode={addNode[2]}
      inputSize={9}
+     bind:nodeWeights={weights[2]}
     />
 </div>
 
