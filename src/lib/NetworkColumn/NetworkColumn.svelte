@@ -46,7 +46,7 @@
     }
 </script>
 
-<div class="network-row" bind:this={container}>
+<div class="network-column" bind:this={container}>
     {#each nodes as node, i}
         <div class="node">
             <Node
@@ -60,7 +60,7 @@
 </div>
 
 <style>
-    .network-row {
+    .network-column {
         display: flex;
         flex-direction: column;
         align-items: center;
