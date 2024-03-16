@@ -1,10 +1,10 @@
 <script>
     let button;
-    let value = false;
+    export let value = false;
 
     export let onclick;
 
-    function toggle() {
+    export function toggle() {
         value = !value;
         button.style.backgroundColor = value ? "#000" : "#f3f2f0";
         onclick(value);

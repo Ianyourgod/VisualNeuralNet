@@ -1,14 +1,25 @@
 <script>
     import Node from "../Node/Node.svelte";
 
-    export const nodes = [];
+    export let nodes = [];
     const nodeUpdates = [];
+    export let nodeWeights = [];
     export let inputFunction;
+    export let inputSize;
 
     let container;
 
+    function genArray(size, val) {
+        const arr = [];
+        for (let i=0;i<size;i++) {
+            arr.push(val);
+        }
+        return arr;
+    }
+
     export function addNode() {
         nodes.push(.5);
+        nodeWeights.push(genArray(inputSize, 1));
     }
 
     export function removeNode() {
@@ -35,6 +46,7 @@
              bind:value={nodes[i]}
              inputFunction={inputFunction}
              bind:setValue={nodeUpdates[i]}
+             bind:connections={nodeWeights[i]}
             />
         </div>
     {/each}
