@@ -161,16 +161,6 @@
      bind:addNode={addNode[1]}
      bind:nodeWeights={weights[1]}
      inputSize={9}
-     startingNeurons={5}
-    />
-
-    <NetworkColumn
-     bind:output={columnUpdates[2]} 
-     bind:nodes={nodes[2]}
-     inputFunction={sig}
-     bind:addNode={addNode[2]}
-     bind:nodeWeights={weights[2]}
-     inputSize={5}
      startingNeurons={3}
     />
 </div>
