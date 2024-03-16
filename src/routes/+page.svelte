@@ -185,7 +185,7 @@
 
 <button on:click={() => {trainWithoutLag(trainingCount)}}>Train</button>
 <button on:click={() => {console.log(test())}}>Test</button>
-<input type="range" min=10 max=5000 step=10 bind:value={trainingCount} />
+10<input type="range" min=10 max=5000 step=10 bind:value={trainingCount} />5000
 
 <div class="input-container">
     <InputContainer
@@ -248,6 +248,7 @@
 
     :global(body) {
         background-color: rgb(34, 34, 49);
+        color: white;   
     }
 
     .rules {
