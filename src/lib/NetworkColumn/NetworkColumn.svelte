@@ -2,37 +2,54 @@
     import Node from "../Node/Node.svelte";
 
     export let nodes = [];
-
-    export let nodeElements = [];
-    let val = 0;
+    const nodeUpdates = [];
+    export let nodeWeights = [];
+    export let inputFunction;
+    export let inputSize;
 
     let container;
 
+    function genArray(size, val) {
+        const arr = [];
+        for (let i=0;i<size;i++) {
+            arr.push(val);
+        }
+        return arr;
+    }
+
     export function addNode() {
-        nodes.push(val);
-        val += .1;
-        nodes = nodes;
+        nodes.push(.5);
+        nodeWeights.push(genArray(inputSize, 1));
     }
 
     export function removeNode() {
         nodes.pop();
-        nodes = nodes;
     }
 
     export function updateNode(i, value) {
         nodes[i] = value;
-        nodes = nodes;
+    }
+
+    export function output(inputs) {
+        const out = [];
+        nodeUpdates.forEach((func) => {
+            out.push(func(inputs));
+        });
+        return out;
     }
 </script>
 
 <div class="network-row" bind:this={container}>
     {#each nodes as node, i}
         <div class="node">
-            <Node bind:value={nodes[i]} bind:element={nodeElements[i]} />
+            <Node
+             bind:value={nodes[i]}
+             inputFunction={inputFunction}
+             bind:setValue={nodeUpdates[i]}
+             bind:connections={nodeWeights[i]}
+            />
         </div>
     {/each}
-
-    <button on:click={addNode}>Add Node</button>
 </div>
 
 <style>

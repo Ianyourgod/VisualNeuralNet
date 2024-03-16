@@ -5,9 +5,14 @@
     export let inputsWidth = 3;
     export let inputsHeight = 3;
 
+    export let onUpdate;
+
+    export let toggleFuncs = [];
+
     let container;
 
     export const inputs = [];
+    export const inputElements = [];
 
     // fill the array with width*height inputs
     for (let i = 0; i < inputsHeight*inputsHeight; i++) {
@@ -16,6 +21,7 @@
 
     function inputOnclick(id, state) {
         inputs[id] = state;
+        onUpdate();
     }
 </script>
 
@@ -23,7 +29,11 @@
     {#each Array(inputsHeight) as input, i}
         <div class="row">
             {#each Array(inputsWidth) as _, j}
-                <Input onclick={(state) => inputOnclick(i*inputsWidth+j, state)} />
+                <Input
+                 bind:this={inputElements[i*inputsWidth+j]}
+                 onclick={(state) => inputOnclick(i*inputsWidth+j, state)}
+                 bind:toggle={toggleFuncs[i*inputsWidth+j]}
+                />
             {/each}
         </div>
     {/each}
