@@ -12,64 +12,7 @@
 
     let trainingCount = 2000;
 
-    let trainingData = [
-        {
-            /* 1 0 0
-               0 1 0
-               0 0 1 */
-            inputs: [1, 0, 0, 0, 1, 0, 0, 0, 1],
-            outputs: [1, 0, 0]
-        },
-        {
-            /* 0 0 1
-               0 1 0
-               1 0 0 */
-            inputs: [0, 0, 1, 0, 1, 0, 1, 0, 0],
-            outputs: [1, 0, 0]
-        },
-        {
-            /* 1 0 0
-               1 0 0
-               1 0 0 */
-            inputs: [1, 0, 0, 1, 0, 0, 1, 0, 0],
-            outputs: [0, 1, 0]
-        },
-        {
-            /* 0 1 0
-               0 1 0
-               0 1 0 */
-            inputs: [0, 1, 0, 0, 1, 0, 0, 1, 0],
-            outputs: [0, 1, 0]
-        },
-        {
-            /* 0 0 1
-               0 0 1
-               0 0 1 */
-            inputs: [0, 0, 1, 0, 0, 1, 0, 0, 1],
-            outputs: [0, 1, 0]
-        },
-        {
-            /* 1 1 1
-               0 0 0
-               0 0 0 */
-            inputs: [1, 1, 1, 0, 0, 0, 0, 0, 0],
-            outputs: [0, 0, 1]
-        },
-        {
-            /* 0 0 0
-               1 1 1
-               0 0 0 */
-            inputs: [0, 0, 0, 1, 1, 1, 0, 0, 0],
-            outputs: [0, 0, 1]
-        },
-        {
-            /* 0 0 0
-               0 0 0
-               1 1 1 */
-            inputs: [0, 0, 0, 0, 0, 0, 1, 1, 1],
-            outputs: [0, 0, 1]
-        }
-    ];
+    let trainingData = [];
 
     function sig(x) {
         return 1/(1+Math.exp(-x))
@@ -82,11 +25,13 @@
     }
     
     onMount(() => {
-        addNodes(0, 9);
-        addNodes(1, 9);
-        addNodes(2, 3);
-
-        toggleFuncs[0]();
+        fetch("/xor.json").then((res) => res.json())
+        .then((data) => {
+            trainingData = data;
+        });
+        
+        addNodes(0, 8);
+        addNodes(1, 1);
 
         setTimeout(() => {
             onUpdate();
@@ -166,15 +111,18 @@
         }
     }
 
-    function trainWithoutLag(amount) {
+    function trainWithoutLag(amount, startedAt) {
+        if (!startedAt) {
+            startedAt = Date.now();
+        }
         if (amount > 0) {
             train(10);
             console.log(amount);
             requestAnimationFrame(() => {
-                trainWithoutLag(amount - 10);
+                trainWithoutLag(amount - 10, startedAt);
             });
         } else {
-            alert("done");
+            alert(`done, took ${(Date.now() - startedAt)/1000} seconds`);
         }
     }
 
@@ -212,17 +160,8 @@
      bind:nodes={nodes[1]}
      inputFunction={sig}
      bind:addNode={addNode[1]}
-     inputSize={9}
+     inputSize={8}
      bind:nodeWeights={weights[1]}
-    />
-
-    <NetworkColumn
-     bind:output={columnUpdates[2]}
-     bind:nodes={nodes[2]}
-     inputFunction={sig}
-     bind:addNode={addNode[2]}
-     inputSize={9}
-     bind:nodeWeights={weights[2]}
     />
 </div>
 
