@@ -202,14 +202,15 @@
                  width={1+weights[i][k][j]/5}
                  color={`#${(Math.floor((-nodes[i][j]*15)+15)).toString(16).repeat(3)}`}
                 />
-
-                <Line
-                 bind:element1={bias}
-                 bind:element2={node2}
-                 width={1}
-                 color="black"
-                />
             {/each}
+        {/if}
+        {#if i > 0}
+            <Line
+             bind:element1={bias}
+             bind:element2={node1}
+             width={1+weights[i-1][j][weights[i-1][j].length-1]/5}
+             color="black"
+            />
         {/if}
     {/each}
 {/each}
