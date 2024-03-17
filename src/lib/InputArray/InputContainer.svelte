@@ -30,7 +30,7 @@
         <div class="row">
             {#each Array(inputsWidth) as _, j}
                 <Input
-                 bind:this={inputElements[i*inputsWidth+j]}
+                 bind:button={inputElements[i*inputsWidth+j]}
                  onclick={(state) => inputOnclick(i*inputsWidth+j, state)}
                  bind:toggle={toggleFuncs[i*inputsWidth+j]}
                 />

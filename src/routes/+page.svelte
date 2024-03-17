@@ -2,13 +2,16 @@
     import { onMount } from "svelte";
     import InputContainer from "../lib/InputArray/InputContainer.svelte";
     import NetworkColumn from "../lib/NetworkColumn/NetworkColumn.svelte";
+    import Line from "../lib/Line/Line.svelte";
+    import Input from "../lib/InputArray/Input.svelte";
 
-    let inputs;
     let columnUpdates = [];
     let nodes = [];
     let addNode = [];
     let toggleFuncs;
     let weights = [];
+    let nodeElements = [];
+    let bias;
 
     const trainingURL = "/lines.json"
 
@@ -32,6 +35,17 @@
             trainingData = data;
         });
 
+        // draw lines time!!!
+
+        // go through all the nodes of the first layer
+        for (let i=0;i<nodeElements.length-1;i++) {
+            nodeElements[i].forEach((node) => {
+                // go through all the nodes of the second layer
+                nodeElements[i+1].forEach((node2) => {
+                });
+            });
+        }
+
         setTimeout(() => {
             onUpdate();
         }, 100);
@@ -39,7 +53,7 @@
 
     function runThrough() {
         let prev = [];
-        inputs.forEach((input) => {
+        nodes[0].forEach((input) => {
             prev.push(Number(input)*2-1);
         });
         columnUpdates.forEach((func) => {
@@ -51,7 +65,7 @@
     function test() {
         let final = 0;
         trainingData.forEach((data) => {
-            inputs = data.inputs;
+            nodes[0] = data.inputs;
             let outputs = data.outputs;
             let out = runThrough();
 
@@ -142,32 +156,63 @@
      inputsWidth={3}
      inputsHeight={3} 
      onUpdate={onUpdate}
-     bind:inputs={inputs}
+     bind:inputs={nodes[0]}
      bind:toggleFuncs={toggleFuncs}
+     bind:inputElements={nodeElements[0]}
     />
+    <Input
+     onclick={()=>{}}
+     value={true}
+     enabled={false}
+     bind:button={bias}
+    /> <!-- bias -->
 </div>
 
 <div class="network">
     <NetworkColumn
      bind:output={columnUpdates[0]} 
-     bind:nodes={nodes[0]}
+     bind:nodes={nodes[1]}
      inputFunction={sig}
      bind:addNode={addNode[0]}
      bind:nodeWeights={weights[0]}
+     bind:nodeElements={nodeElements[1]}
      inputSize={9}
      startingNeurons={4}
     />
 
     <NetworkColumn
      bind:output={columnUpdates[1]} 
-     bind:nodes={nodes[1]}
+     bind:nodes={nodes[2]}
      inputFunction={sig}
      bind:addNode={addNode[1]}
      bind:nodeWeights={weights[1]}
+     bind:nodeElements={nodeElements[2]}
      inputSize={4}
      startingNeurons={3}
     />
 </div>
+
+{#each nodeElements as _, i}
+    {#each nodeElements[i] as node1, j}
+        {#if i < nodeElements.length-1}
+            {#each nodeElements[i+1] as node2, k}
+                <Line
+                 bind:element1={node1}
+                 bind:element2={node2}
+                 width={1+weights[i][k][j]/5}
+                 color={`#${(Math.floor((-nodes[i][j]*15)+15)).toString(16).repeat(3)}`}
+                />
+
+                <Line
+                 bind:element1={bias}
+                 bind:element2={node2}
+                 width={1}
+                 color="black"
+                />
+            {/each}
+        {/if}
+    {/each}
+{/each}
 
 <div class="rules">
     <img src="/diagRule.png" alt="diagonal rule">
@@ -190,7 +235,7 @@
     }
 
     :global(body) {
-        background-color: rgb(34, 34, 49);
+        background-color: rgb(69, 69, 117);
         color: white;   
     }
 

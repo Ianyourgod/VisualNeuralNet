@@ -1,17 +1,28 @@
+<svelte:options accessors/>
+
 <script>
-    let button;
+    import { onMount } from 'svelte';
+    export let button;
     export let value = false;
 
     export let onclick;
+    export let enabled = true;
+
+    onMount(() => {
+        if (value) {
+            button.style.backgroundColor = "#000";
+        }
+    })
 
     export function toggle() {
+        if (!enabled) return;
         value = !value;
         button.style.backgroundColor = value ? "#000" : "#f3f2f0";
         onclick(value);
     }
 </script>
 
-<button bind:this={button} on:click={toggle} class="input" />
+<button bind:this={button} on:click={toggle} class="input" style="{enabled ? "" : "cursor:default;"}"></button>
 
 
 <style>

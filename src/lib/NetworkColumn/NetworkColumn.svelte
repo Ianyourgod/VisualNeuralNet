@@ -7,6 +7,7 @@
     export let inputFunction;
     export let inputSize;
     export let startingNeurons = 1;
+    export let nodeElements = [];
 
     let container;
 
@@ -54,6 +55,7 @@
              inputFunction={inputFunction}
              bind:setValue={nodeUpdates[i]}
              bind:connections={nodeWeights[i]}
+             bind:element={nodeElements[i]}
             />
         </div>
     {/each}

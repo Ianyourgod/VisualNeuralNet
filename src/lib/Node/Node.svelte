@@ -2,6 +2,7 @@
     export let value = .5;
     export let inputFunction;
     export let connections;
+    export let element;
 
     export function setValue(inputs) {
         let final = 0;
@@ -14,8 +15,7 @@
     }
 </script>
 
-<div class="node" style="background-color: #{(Math.floor((-value*15)+15)).toString(16).repeat(3)}">
-</div>
+<div class="node" style="background-color: #{(Math.floor((-value*15)+15)).toString(16).repeat(3)}" bind:this={element}></div>
 
 <style>
     .node {
