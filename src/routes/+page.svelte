@@ -35,8 +35,6 @@
             trainingData = data;
         });
 
-        // draw lines time!!!
-
         // go through all the nodes of the first layer
         for (let i=0;i<nodeElements.length-1;i++) {
             nodeElements[i].forEach((node) => {
