@@ -3,6 +3,10 @@
     import { createProgramFromSources } from "./webglUtils.js"
     import { browser } from "$app/environment"
 
+    export let size;
+    export let inputs;
+    export let glsl;
+
     if (browser) {
         const vs = `
         attribute vec4 position;
@@ -18,14 +22,12 @@
         uniform vec2 srcDimensions;
 
         void main() {
-        vec2 texcoord = gl_FragCoord.xy / srcDimensions;
-        vec4 value = texture2D(srcTex, texcoord);
-        gl_FragColor = value * 2.0;
+            ${glsl}
         }
         `;
 
-        const dstWidth = 3;
-        const dstHeight = 2;
+        const dstWidth = size.x;
+        const dstHeight = size.y;
 
         // make a 3x2 canvas for 6 results
         const canvas = document.createElement('canvas');
@@ -64,8 +66,8 @@
         );
 
         // create our source texture
-        const srcWidth = 3;
-        const srcHeight = 2;
+        const srcWidth = size.x;
+        const srcHeight = size.y;
         const tex = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1); // see https://webglfundamentals.org/webgl/lessons/webgl-data-textures.html
@@ -78,10 +80,7 @@
             0,                // border
             gl.LUMINANCE,     // format
             gl.UNSIGNED_BYTE, // type
-            new Uint8Array([
-            1, 2, 3,
-            4, 5, 6,
-            ]));
+            new Uint8Array(inputs));
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -91,15 +90,16 @@
         gl.uniform1i(srcTexLoc, 0);  // tell the shader the src texture is on texture unit 0
         gl.uniform2f(srcDimensionsLoc, srcWidth, srcHeight);
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6);  // draw 2 triangles (6 vertices)
+        gl.drawArrays(gl.TRIANGLES, 0, size.x*size.y);
 
         // get the result
         const results = new Uint8Array(dstWidth * dstHeight * 4);
         gl.readPixels(0, 0, dstWidth, dstHeight, gl.RGBA, gl.UNSIGNED_BYTE, results);
 
         // print the results
+        console.log(results);
         for (let i = 0; i < dstWidth * dstHeight; ++i) {
-        log(results[i * 4]);
+            console.log(results[i*4]);
         }
 
         function log(...args) {

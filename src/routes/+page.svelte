@@ -125,6 +125,12 @@
     function onUpdate() {
         runThrough();
     }
+
+    const shaderCode = `
+        vec2 texcoord = gl_FragCoord.xy / srcDimensions;
+        vec4 value = texture2D(srcTex, texcoord);
+        gl_FragColor = value * 2.0;
+    `
 </script>
 
 <button on:click={() => {trainWithoutLag(trainingCount)}}>Train</button>
@@ -206,7 +212,11 @@
     <img src="/horiRule.png" alt="horizontal rule">
 </div>
 
-<Gpgpu />
+<Gpgpu
+ size={{x:3,y:2}}
+ inputs={[1,2,3,4,5,6]}
+ glsl={shaderCode}
+/>
 
 <style>
     .input-container {

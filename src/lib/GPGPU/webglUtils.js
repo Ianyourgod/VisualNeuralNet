@@ -251,7 +251,7 @@ var loadShader = function(gl, shaderSource, shaderType, opt_errorCallback) {
  * @param {string[]?} opt_attribs The attribs names.
  * @param {number[]?} opt_locations The locations for the
  *        attribs.
- * @param {function(string): void) opt_errorCallback callback for errors.
+ * @param {function(string): void} opt_errorCallback callback for errors.
  */
 var loadProgram = function(
     gl, shaders, opt_attribs, opt_locations, opt_errorCallback) {
@@ -289,7 +289,7 @@ var loadProgram = function(
  * @param {string} scriptId The id of the script tag.
  * @param {number} opt_shaderType The type of shader. If not passed in it will
  *     be derived from the type of the script tag.
- * @param {function(string): void) opt_errorCallback callback for errors.
+ * @param {function(string): void} opt_errorCallback callback for errors.
  * @return {WebGLShader} The created shader.
  */
 var createShaderFromScript = function(
