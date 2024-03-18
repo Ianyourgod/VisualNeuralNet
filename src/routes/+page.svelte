@@ -1,9 +1,9 @@
 <script>
     import { onMount } from "svelte";
-    import InputContainer from "../lib/InputArray/InputContainer.svelte";
-    import NetworkColumn from "../lib/NetworkColumn/NetworkColumn.svelte";
-    import Line from "../lib/Line/Line.svelte";
-    import Input from "../lib/InputArray/Input.svelte";
+    import InputContainer from "$lib/InputArray/InputContainer.svelte";
+    import NetworkColumn from "$lib/NetworkColumn/NetworkColumn.svelte";
+    import Line from "$lib/Line/Line.svelte";
+    import Input from "$lib/InputArray/Input.svelte";
 
     let columnUpdates = [];
     let nodes = [];
