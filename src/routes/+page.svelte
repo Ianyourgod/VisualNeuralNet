@@ -4,6 +4,7 @@
     import NetworkColumn from "$lib/NetworkColumn/NetworkColumn.svelte";
     import Line from "$lib/Line/Line.svelte";
     import Input from "$lib/InputArray/Input.svelte";
+    import Gpgpu from "$lib/GPGPU/GPGPU.svelte";
 
     let columnUpdates = [];
     let nodes = [];
@@ -204,6 +205,8 @@
     <img src="/vertRule.png" alt="vertical rule">
     <img src="/horiRule.png" alt="horizontal rule">
 </div>
+
+<Gpgpu />
 
 <style>
     .input-container {
