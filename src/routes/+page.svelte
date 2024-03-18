@@ -76,42 +76,28 @@
 
     function trainOnce() {
         // loop over all the weights, fiddle with em and see what works
-        let changes = [];
-        weights.forEach((column, i) => {
-            let change = [];
-            column.forEach((node, j) => {
-                let nodeChange = [];
-                node.forEach((weight, k) => {
-                    let total = [0, 0];
-                    weights[i][j][k] += .1;
-                    total[0] = test();
-                    weights[i][j][k] = weight - .1;
-                    total[1] = test();
-                    weights[i][j][k] = weight; // reset
-
-                    nodeChange.push(total);
-                });
-                change.push(nodeChange);
-            });
-            changes.push(change);
-        });
-
-        // now find the best change
         let best = [0, 0, 0, 0, 9999999]; // [column, node, weight, change, total]
-        changes.forEach((column, i) => {
+        weights.forEach((column, i) => {
             column.forEach((node, j) => {
-                node.forEach((changes, k) => {
-                    changes.forEach((change, l) => {
-                        if (change < best[4]) {
-                            best = [i, j, k, l, change];
-                        }
-                    });
+                node.forEach((weight, k) => {
+                    let testVal;
+                    weights[i][j][k] += .1;
+                    testVal = test();
+                    if (testVal < best[4]) {
+                        best = [i, j, k, 1, testVal];
+                    }
+                    weights[i][j][k] = weight - .1;
+                    testVal = test();
+                    if (testVal < best[4]) {
+                        best = [i, j, k, 0, testVal];
+                    }
+                    weights[i][j][k] = weight; // reset
                 });
             });
         });
 
         // apply the best change
-        weights[best[0]][best[1]][best[2]] += best[3] ? -.1 : .1;
+        weights[best[0]][best[1]][best[2]] += best[3] ? .1 : -.1;
     }
 
     function train(amount) {
