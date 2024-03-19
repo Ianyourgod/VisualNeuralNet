@@ -14,6 +14,9 @@
     let nodeElements = [];
     let bias;
 
+    let output = [];
+    let gpUpdate;
+
     const trainingURL = "/lines.json"
 
     let trainingCount = 2000;
@@ -124,12 +127,31 @@
 
     function onUpdate() {
         runThrough();
+        console.log(gpUpdate());
     }
 
     const shaderCode = `
-        vec2 texcoord = gl_FragCoord.xy / srcDimensions;
-        vec4 value = texture2D(srcTex, texcoord);
-        gl_FragColor = value * 2.0;
+        // for "getValueFrom2DTextureAs1DArray", the first item is the source texture, the second is the dimensions of the source texture, and the third is the index
+        // srcDimensions is the dimensions of the source texture. Remember that everything is between 0 and 1, so you need the divide the dimensions by 255 to get the actual dimensions
+        // srcTex is the source texture (inputs)
+
+        // make a variable:
+        vec4 ret = vec4(0.0, 0.0, 0.0, 0.0);
+
+        highp int len = int(srcDimensions.x);
+
+        for (int i = 0; i < MAXITS;i++) {
+            if (i >= len) {
+                break;
+            }
+            vec4 v1 = getValueFrom2DTextureAs1DArray(srcTex, srcDimensions, float(i));
+
+            ret += v1;
+        }
+
+        ret = 1.0 / (1.0 + exp(-ret/255.0));
+
+        return ret;
     `
 </script>
 
@@ -206,17 +228,20 @@
     {/each}
 {/each}
 
+{#if nodes.length > 0}
+    <Gpgpu
+    size={4}
+    bind:inputs={nodes[1]}
+    glsl={shaderCode}
+    bind:update={gpUpdate}
+    />
+{/if}
+
 <div class="rules">
     <img src="/diagRule.png" alt="diagonal rule">
     <img src="/vertRule.png" alt="vertical rule">
     <img src="/horiRule.png" alt="horizontal rule">
 </div>
-
-<Gpgpu
- size={{x:3,y:2}}
- inputs={[1,2,3,4,5,6]}
- glsl={shaderCode}
-/>
 
 <style>
     .input-container {
