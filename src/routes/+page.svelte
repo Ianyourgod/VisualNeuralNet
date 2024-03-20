@@ -89,13 +89,15 @@
                     nodes[i+1] = val;
                 });
             }
+
+            return vals[vals.length-1];
         } else {
             columnUpdates.forEach((func) => {
                 prev = func(prev);
             });
-        }
 
-        return prev;
+            return prev;
+        }
     }
 
     function test() {
