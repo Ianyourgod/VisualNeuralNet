@@ -1,22 +1,22 @@
 <script>
     import { onMount } from "svelte";
+    import { browser } from "$app/environment";
     import InputContainer from "$lib/InputArray/InputContainer.svelte";
     import NetworkColumn from "$lib/NetworkColumn/NetworkColumn.svelte";
     import Line from "$lib/Line/Line.svelte";
     import Input from "$lib/InputArray/Input.svelte";
-    import Gpgpu from "$lib/GPGPU/GPGPU.svelte";
 
     let columnUpdates = [];
+    let updateColumnValues = [];
     let nodes = [];
     let addNode = [];
     let toggleFuncs;
     let weights = [];
     let nodeElements = [];
     let bias;
-    let shaderInputs = [];
-
-    let output = [];
-    let gpUpdate;
+    let use_gpu = false;
+    const gpu = browser ? new GPU() : null;
+    console.log("Dont mind these warnings, they're from the gpu library.");
 
     const trainingURL = "/lines.json"
 
@@ -48,22 +48,53 @@
         }, 100);
     });
 
-    function runThrough(gsdfs) {
-        if (gsdfs) {
-            shaderInputs = [nodes[1].concat([true])].concat(
-                weights[1]
-            );
-
-            console.log(gpUpdate(shaderInputs));
-        }
+    function runThrough(update, use_gpu=true) {
 
         let prev = [];
         nodes[0].forEach((input) => {
             prev.push(Number(input)*2-1);
         });
-        columnUpdates.forEach((func) => {
-            prev = func(prev);
-        });
+        
+        if (use_gpu) {
+            prev = prev.concat([1]);
+
+            let vals = [];
+
+            const columnOutput = gpu.createKernel(function(input_weights) {
+                let sum = 0;
+                for (let i = 0; i < this.constants.size; i++) {
+                    sum += input_weights[0][i] * input_weights[this.thread.x+1][i];
+                }
+
+                return 1/(1+Math.exp(-sum));
+            });
+
+            columnOutput.setDynamicOutput(true);
+
+            for (let i=0;i<nodes.length-1;i++) {
+                columnOutput.setOutput([nodes[i+1].length])
+                            .setConstants({size: nodes[i].length+1}); 
+                            
+                let shaderInputs = [prev].concat(weights[i]);
+
+                let output = Array.from(columnOutput(shaderInputs));
+                
+                vals.push(output);
+
+                prev = output.concat([1]);
+            }
+
+            if (update) {
+                vals.forEach((val, i) => {
+                    nodes[i+1] = val;
+                });
+            }
+        } else {
+            columnUpdates.forEach((func) => {
+                prev = func(prev);
+            });
+        }
+
         return prev;
     }
 
@@ -72,7 +103,7 @@
         trainingData.forEach((data) => {
             nodes[0] = data.inputs;
             let outputs = data.outputs;
-            let out = runThrough();
+            let out = runThrough(false, use_gpu);
 
             for (let i = 0; i < out.length; i++) {
                 final += Math.pow(out[i] - outputs[i], 2);
@@ -129,48 +160,36 @@
     }
 
     function onUpdate() {
-        runThrough();
+        runThrough(true, use_gpu);
     }
-
-    const shaderCode = `
-        // for "getValueFrom2DTextureAs1DArray", the first item is the source texture, the second is the dimensions of the source texture, and the third is the index
-        // srcDimensions is the dimensions of the source texture. Remember that everything is between 0 and 1, so you need the divide the dimensions by 255 to get the actual dimensions
-        // srcTex is the source texture (inputs)
-
-        // make a variable:
-        vec4 ret = vec4(0.0, 0.0, 0.0, 0.0);
-
-        highp int len = int(srcDimensions.x);
-
-        for (int i = 0; i < MAXITS;i++) {
-            if (i >= len) {
-                break;
-            }
-
-            vec4 v1 = getValueFrom2DTextureAs1DArray(srcTex, srcDimensions, float(i));
-
-            v1 *= getValueFrom2DTextureAs1DArray(srcTex, srcDimensions, (index+1.0)*srcDimensions.x+float(i));
-
-            ret += v1;
-        }
-
-
-        ret = (1.0 / (1.0 + exp(-(ret / 255.0))));
-
-        return ret;
-    `
 </script>
 
-<button on:click={() => {trainWithoutLag(trainingCount)}}>Train</button>
-<button on:click={() => {trainOnce()}}>Train Once</button>
+<button on:click={() => {trainWithoutLag(trainingCount);runThrough(true, use_gpu);}}>Train</button>
+
+<button on:click={() => {trainOnce();runThrough(true, use_gpu);}}>Train Once</button>
+
 <button on:click={() => {
     let res = test();
+    runThrough(true, use_gpu);
     console.log(res);
     alert(res);
+    
 }}>Test</button>
-<button on:click={() => {runThrough(true)}}>Run Through</button>
+
+<button on:click={() => {
+    let res = runThrough(true, use_gpu);
+    console.log(res);
+    alert(res);
+
+}}>Run Through</button>
+
 10<input type="range" min=10 max=5000 step=10 bind:value={trainingCount} />5000
 ({trainingCount})
+
+<input type="checkbox" bind:checked={use_gpu} />
+use gpu (only for large networks)
+
+
 <div class="input-container">
     <InputContainer
      inputsWidth={3}
@@ -197,7 +216,8 @@
      bind:nodeWeights={weights[0]}
      bind:nodeElements={nodeElements[1]}
      inputSize={9}
-     startingNeurons={4}
+     startingNeurons={10}
+     bind:updateNodes={updateColumnValues[0]}
     />
 
     <NetworkColumn
@@ -207,8 +227,21 @@
      bind:addNode={addNode[1]}
      bind:nodeWeights={weights[1]}
      bind:nodeElements={nodeElements[2]}
-     inputSize={4}
+     inputSize={10}
+     startingNeurons={5}
+     bind:updateNodes={updateColumnValues[1]}
+    />
+
+    <NetworkColumn
+     bind:output={columnUpdates[2]} 
+     bind:nodes={nodes[3]}
+     inputFunction={sig}
+     bind:addNode={addNode[2]}
+     bind:nodeWeights={weights[2]}
+     bind:nodeElements={nodeElements[3]}
+     inputSize={5}
      startingNeurons={3}
+     bind:updateNodes={updateColumnValues[2]}
     />
 </div>
 
@@ -234,14 +267,6 @@
         {/if}
     {/each}
 {/each}
-
-{#if nodes.length > 0}
-    <Gpgpu
-    outsize={3}
-    glsl={shaderCode}
-    bind:update={gpUpdate}
-    />
-{/if}
 
 <div class="rules">
     <img src="/diagRule.png" alt="diagonal rule">

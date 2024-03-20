@@ -9,6 +9,12 @@
     export let startingNeurons = 1;
     export let nodeElements = [];
 
+    export function updateNodes(values) {
+        values.forEach((value, i) => {
+            updateNode(i, value);
+        });
+    }
+
     let container;
 
     function genArray(size, valFunc) {
@@ -56,6 +62,7 @@
              bind:setValue={nodeUpdates[i]}
              bind:connections={nodeWeights[i]}
              bind:element={nodeElements[i]}
+
             />
         </div>
     {/each}
