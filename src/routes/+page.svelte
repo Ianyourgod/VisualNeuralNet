@@ -216,7 +216,7 @@ use gpu (only for large networks)
      bind:nodeWeights={weights[0]}
      bind:nodeElements={nodeElements[1]}
      inputSize={9}
-     startingNeurons={10}
+     startingNeurons={4}
      bind:updateNodes={updateColumnValues[0]}
     />
 
@@ -227,21 +227,9 @@ use gpu (only for large networks)
      bind:addNode={addNode[1]}
      bind:nodeWeights={weights[1]}
      bind:nodeElements={nodeElements[2]}
-     inputSize={10}
-     startingNeurons={5}
-     bind:updateNodes={updateColumnValues[1]}
-    />
-
-    <NetworkColumn
-     bind:output={columnUpdates[2]} 
-     bind:nodes={nodes[3]}
-     inputFunction={sig}
-     bind:addNode={addNode[2]}
-     bind:nodeWeights={weights[2]}
-     bind:nodeElements={nodeElements[3]}
-     inputSize={5}
+     inputSize={4}
      startingNeurons={3}
-     bind:updateNodes={updateColumnValues[2]}
+     bind:updateNodes={updateColumnValues[1]}
     />
 </div>
 
