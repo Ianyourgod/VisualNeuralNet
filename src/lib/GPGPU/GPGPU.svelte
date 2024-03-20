@@ -1,11 +1,10 @@
 <script>
 
-    import { createProgramFromSources } from "./webglUtils.js"
+    import { webglUtils } from "./webglUtils.js"
     import { browser } from "$app/environment"
 
-    export let size;
-    export let inputs;
     export let glsl;
+    export let outsize;
 
     let canvas;
     let gl;
@@ -54,8 +53,8 @@
         }
         `;
 
-        dstWidth = inputs.length;
-        dstHeight = 1;
+        dstWidth = 0;
+        dstHeight = 0;
 
         canvas = document.createElement('canvas');
         canvas.width = dstWidth;
@@ -63,7 +62,7 @@
 
         gl = canvas.getContext('webgl');
 
-        program = createProgramFromSources(gl, [vs, fs]);
+        program = webglUtils.createProgramFromSources(gl, [vs, fs]);
         positionLoc = gl.getAttribLocation(program, 'position');
         srcTexLoc = gl.getUniformLocation(program, 'srcTex');
         srcDimensionsLoc = gl.getUniformLocation(program, 'srcDimensions');
@@ -99,23 +98,24 @@
         gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     }
 
-    export function update() {
-        dstWidth = inputs.length;
+    export function update(inputs) {
+        dstWidth = outsize;
         dstHeight = 1;
 
         canvas.width = dstWidth;
         canvas.height = dstHeight;
 
-        let workingInputs = inputs.map((x) => Math.floor(x * 255));
+        let workingInputs = (inputs.flat()).map((x) => Math.floor(x * 255));
 
         console.log(workingInputs);
 
+        console.log(inputs[0].length, inputs.length);
         gl.texImage2D(
             gl.TEXTURE_2D,
             0,                // mip level
             gl.LUMINANCE,     // internal format
-            size,
-            1, // height
+            inputs[0].length, // width
+            inputs.length, // height
             0,                // border
             gl.LUMINANCE,     // format
             gl.UNSIGNED_BYTE, // type
@@ -127,14 +127,15 @@
 
         gl.useProgram(program);
         gl.uniform1i(srcTexLoc, 0);  // tell the shader the src texture is on texture unit 0
-        gl.uniform2f(srcDimensionsLoc, size, 1);
+        gl.uniform2f(srcDimensionsLoc, inputs[0].length, inputs.length);
         gl.uniform2f(dstDimensionsLoc, dstWidth, dstHeight);
 
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
         const results = new Uint8Array(dstWidth * dstHeight * 4);
         gl.readPixels(0, 0, dstWidth, dstHeight, gl.RGBA, gl.UNSIGNED_BYTE, results);
 
         let out = [];
+        console.log(results);
         for (let i = 0; i < dstWidth * dstHeight; ++i) {
             out.push(results[i * 4]);
         }

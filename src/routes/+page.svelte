@@ -13,6 +13,7 @@
     let weights = [];
     let nodeElements = [];
     let bias;
+    let shaderInputs = [];
 
     let output = [];
     let gpUpdate;
@@ -25,12 +26,6 @@
 
     function sig(x) {
         return 1/(1+Math.exp(-x))
-    }
-
-    function addNodes(to, amount) {
-        for (let i = 0; i < amount; i++) {
-            addNode[to]();
-        }
     }
     
     onMount(() => {
@@ -53,7 +48,15 @@
         }, 100);
     });
 
-    function runThrough() {
+    function runThrough(gsdfs) {
+        if (gsdfs) {
+            shaderInputs = [nodes[1].concat([true])].concat(
+                weights[1]
+            );
+
+            console.log(gpUpdate(shaderInputs));
+        }
+
         let prev = [];
         nodes[0].forEach((input) => {
             prev.push(Number(input)*2-1);
@@ -127,7 +130,6 @@
 
     function onUpdate() {
         runThrough();
-        console.log(gpUpdate());
     }
 
     const shaderCode = `
@@ -144,12 +146,16 @@
             if (i >= len) {
                 break;
             }
+
             vec4 v1 = getValueFrom2DTextureAs1DArray(srcTex, srcDimensions, float(i));
+
+            v1 *= getValueFrom2DTextureAs1DArray(srcTex, srcDimensions, (index+1.0)*srcDimensions.x+float(i));
 
             ret += v1;
         }
 
-        ret = 1.0 / (1.0 + exp(-ret/255.0));
+
+        ret = (1.0 / (1.0 + exp(-(ret / 255.0))));
 
         return ret;
     `
@@ -162,6 +168,7 @@
     console.log(res);
     alert(res);
 }}>Test</button>
+<button on:click={() => {runThrough(true)}}>Run Through</button>
 10<input type="range" min=10 max=5000 step=10 bind:value={trainingCount} />5000
 ({trainingCount})
 <div class="input-container">
@@ -230,8 +237,7 @@
 
 {#if nodes.length > 0}
     <Gpgpu
-    size={4}
-    bind:inputs={nodes[1]}
+    outsize={3}
     glsl={shaderCode}
     bind:update={gpUpdate}
     />
