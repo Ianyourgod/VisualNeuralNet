@@ -70,6 +70,7 @@
             });
 
             columnOutput.setDynamicOutput(true);
+            columnOutput.setDynamicArguments(true);
 
             for (let i=0;i<nodes.length-1;i++) {
                 columnOutput.setOutput([nodes[i+1].length])
@@ -168,7 +169,12 @@
 
 <button on:click={() => {trainWithoutLag(trainingCount);runThrough(true, use_gpu);}}>Train</button>
 
-<button on:click={() => {trainOnce();runThrough(true, use_gpu);}}>Train Once</button>
+<button on:click={() => {
+    let start=Date.now();
+    trainOnce();
+    console.log(Date.now()-start);
+    runThrough(true, use_gpu);
+}}>Train Once</button>
 
 <button on:click={() => {
     let res = test();
@@ -179,7 +185,9 @@
 }}>Test</button>
 
 <button on:click={() => {
+    let start = Date.now();
     let res = runThrough(true, use_gpu);
+    console.log("Time Taken:", Date.now()-start);
     console.log(res);
     alert(res);
 
@@ -189,7 +197,7 @@
 ({trainingCount})
 
 <input type="checkbox" bind:checked={use_gpu} />
-use gpu (only for large networks)
+use gpu (only for <b>VERY LARGE</b> networks)
 
 
 <div class="input-container">
