@@ -15,7 +15,7 @@
     let nodeElements = [];
     let bias;
     let use_gpu = false;
-    const gpu = browser ? new GPU() : null;
+    const gpu = browser ? new GPUX() : null;
     console.log("Dont mind these warnings, they're from the gpu library.");
 
     const trainingURL = "/lines.json"
