@@ -15,6 +15,7 @@
     let nodeElements = [];
     let bias;
     let use_gpu = false;
+    let columnOutput; // this is the gpu kernel
     const gpu = browser ? new GPUX() : null;
     console.log("Dont mind these warnings, they're from the gpu library.");
 
@@ -43,6 +44,18 @@
             });
         }
 
+        columnOutput = gpu.createKernel(function(input_weights) {
+                let sum = 0;
+                for (let i = 0; i < this.constants.size; i++) {
+                    sum += input_weights[0][i] * input_weights[this.thread.x+1][i];
+                }
+
+                return 1/(1+Math.exp(-sum));
+            });
+
+            columnOutput.setDynamicOutput(true);
+            columnOutput.setDynamicArguments(true);
+
         setTimeout(() => {
             onUpdate();
         }, 100);
@@ -59,18 +72,6 @@
             prev = prev.concat([1]);
 
             let vals = [];
-
-            const columnOutput = gpu.createKernel(function(input_weights) {
-                let sum = 0;
-                for (let i = 0; i < this.constants.size; i++) {
-                    sum += input_weights[0][i] * input_weights[this.thread.x+1][i];
-                }
-
-                return 1/(1+Math.exp(-sum));
-            });
-
-            columnOutput.setDynamicOutput(true);
-            columnOutput.setDynamicArguments(true);
 
             for (let i=0;i<nodes.length-1;i++) {
                 columnOutput.setOutput([nodes[i+1].length])
